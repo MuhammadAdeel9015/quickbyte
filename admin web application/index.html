@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1d6b4b">
+  <meta name="description" content="QuickBite administration portal demo">
+  <title>QuickBite Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-decoration decoration-one"></div>
+    <div class="login-decoration decoration-two"></div>
+    <div class="login-card">
+      <a class="brand login-brand" href="#" aria-label="QuickBite Admin home"><span class="brand-mark">Q</span><span>Quick<span>Bite</span><small>ADMIN PORTAL</small></span></a>
+      <div class="login-intro">
+        <span class="eyebrow">WELCOME BACK</span>
+        <h1>Your café,<br>in good hands.</h1>
+        <p>Sign in to manage your daily operations and keep QuickBite running smoothly.</p>
+      </div>
+      <form id="loginForm" novalidate>
+        <label for="loginEmail">Email address</label>
+        <input id="loginEmail" type="email" placeholder="admin@quickbite.test" autocomplete="username" required>
+        <div class="field-error" id="emailError"></div>
+        <label for="loginPassword">Password</label>
+        <div class="password-field">
+          <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+          <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">Show</button>
+        </div>
+        <div class="field-error" id="passwordError"></div>
+        <button class="button button-primary login-submit" type="submit">Sign in <span>→</span></button>
+        <p class="login-hint">Demo access: <b>admin@quickbite.test</b> · <b>QuickBite123</b></p>
+      </form>
+      <div class="login-foot">A little more organized. A lot more delicious. <span>✦</span></div>
+    </div>
+    <div class="login-side">
+      <div class="login-side-content">
+        <span class="side-label">THE QUICKBITE WAY</span>
+        <h2>Good food.<br>Thoughtful service.<br><em>Every single day.</em></h2>
+        <p>Your operations at a glance, so you can focus on what matters most.</p>
+        <div class="login-stats"><div><b>4.9</b><span>Guest rating</span></div><i></i><div><b>15 min</b><span>Average prep</span></div><i></i><div><b>Fresh</b><span>Every day</span></div></div>
+        <div class="login-food-art" aria-hidden="true">🥗</div>
+      </div>
+      <span class="login-copyright">© <span id="yearLabel"></span> QuickBite Café · Admin demo</span>
+    </div>
+  </section>
+
+  <div id="appShell" class="app-shell is-hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <a class="brand" href="#" data-page="dashboard"><span class="brand-mark">Q</span><span>Quick<span>Bite</span><small>ADMIN PORTAL</small></span></a>
+        <button id="sidebarClose" class="icon-button sidebar-close" aria-label="Close navigation">×</button>
+      </div>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav id="mainNav" class="main-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-page="dashboard"><span class="nav-icon">⌂</span>Dashboard</button>
+        <button class="nav-link" data-page="orders"><span class="nav-icon">▤</span>Orders <span class="nav-count" id="pendingCount">0</span></button>
+        <button class="nav-link" data-page="customers"><span class="nav-icon">♙</span>Customers</button>
+        <button class="nav-link" data-page="riders"><span class="nav-icon">♧</span>Riders</button>
+        <button class="nav-link" data-page="employees"><span class="nav-icon">♧</span>Employees</button>
+        <button class="nav-link" data-page="roles"><span class="nav-icon">♙</span>Roles &amp; access</button>
+        <div class="nav-divider"></div>
+        <div class="sidebar-label">MANAGE</div>
+        <button class="nav-link" data-page="menu"><span class="nav-icon">◈</span>Menu</button>
+        <button class="nav-link" data-page="inventory"><span class="nav-icon">▦</span>Inventory</button>
+        <button class="nav-link" data-page="reports"><span class="nav-icon">▥</span>Sales &amp; reports</button>
+        <button class="nav-link" data-page="notifications"><span class="nav-icon">♧</span>Notifications <span class="nav-count nav-count-light" id="unreadCount">0</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-tip"><span>✦ TODAY'S TIP</span><p>Small details make a big difference. Keep an eye on low stock.</p><button data-page="inventory">Check inventory <span>→</span></button></div>
+        <div class="sidebar-user">
+          <div class="avatar avatar-green">AM</div>
+          <div class="user-meta"><b>Alex Morgan</b><span>Administrator</span></div>
+          <button id="logoutButton" class="icon-button logout-button" aria-label="Log out" title="Log out">↗</button>
+        </div>
+      </div>
+    </aside>
+    <div id="sidebarScrim" class="sidebar-scrim"></div>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left"><button id="menuToggle" class="icon-button menu-toggle" aria-label="Open navigation">☰</button><div class="breadcrumb"><span>QuickBite</span><b>/</b><strong id="breadcrumbCurrent">Dashboard</strong></div></div>
+        <div class="topbar-right">
+          <div class="date-label"><span class="live-dot"></span><span id="todayLabel"></span></div>
+          <button class="top-notification" data-page="notifications" aria-label="Open notifications">♧<i id="topUnreadDot"></i></button>
+          <div class="top-profile"><div class="avatar avatar-cream">AM</div><div><b>Alex Morgan</b><span>Administrator</span></div><span class="profile-chevron">⌄</span></div>
+        </div>
+      </header>
+      <div id="pageContent" class="page-content"></div>
+      <footer class="app-footer">Made with care at QuickBite <span>✦</span><span class="footer-version">Admin demo · v1.0</span></footer>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

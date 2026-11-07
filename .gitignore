@@ -1,0 +1,59 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Secrets and private credentials
+.secrets/
+secrets/
+credentials/
+**/*secret*
+**/*credential*
+**/*private-key*
+**/id_rsa*
+**/id_ed25519*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Node.js dependencies and generated output
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+coverage/
+dist/
+
+# Flutter and Dart generated files
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/build/
+**/generated_plugin_registrant.dart
+**/Generated.xcconfig
+**/flutter_export_environment.sh
+**/local.properties
+
+# Platform build output
+**/.gradle/
+**/Pods/
+**/DerivedData/
+
+# Deployment and tool caches
+.vercel/
+**/.vercel/
+.next/
+.turbo/
+.cache/
+.parcel-cache/
+out/
+tmp/
+
+# Local editor and OS files
+.DS_Store
+Thumbs.db
+*.log
