@@ -10,7 +10,7 @@
     "test": "node --require ./tests/setup.js --test"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.119.0",

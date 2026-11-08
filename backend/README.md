@@ -4,7 +4,7 @@ Frontend-independent REST API for the customer web application, rider app, and a
 
 ## Requirements and run
 
-- Node.js 20 or newer
+- Node.js 22 or newer
 - npm
 
 From this directory:
