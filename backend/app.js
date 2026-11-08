@@ -44,4 +44,7 @@ function createApp(options = {}) {
   return app;
 }
 
-module.exports = { createApp };
+const app = createApp();
+app.createApp = createApp;
+
+module.exports = app;

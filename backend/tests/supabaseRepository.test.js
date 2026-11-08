@@ -484,8 +484,11 @@ test("feedback, shifts, and attendance map CRUD fields to existing schema column
 });
 
 test("Vercel entry point exports the Express app without starting a separate server", async () => {
-  const app = require("../api");
+  const app = require("../app");
+  const serverlessApp = require("../api");
   const request = require("supertest");
   assert.equal(typeof app, "function");
-  assert.equal((await request(app).get("/health")).status, 200);
+  assert.equal(typeof app.createApp, "function");
+  assert.strictEqual(serverlessApp, app);
+  assert.equal((await request(serverlessApp).get("/health")).status, 200);
 });

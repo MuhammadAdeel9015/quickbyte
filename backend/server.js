@@ -1,7 +1,6 @@
 const config = require("./config/env");
-const { createApp } = require("./app");
+const app = require("./app");
 
-const app = createApp();
 const server = app.listen(config.port, () => {
   console.log(`QuickBite API listening on http://localhost:${config.port}`);
 });
