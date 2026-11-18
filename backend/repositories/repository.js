@@ -3,6 +3,7 @@ class Repository {
   listUsers() { throw new Error("Repository.listUsers must be implemented."); }
   getUserById() { throw new Error("Repository.getUserById must be implemented."); }
   getUserByEmail() { throw new Error("Repository.getUserByEmail must be implemented."); }
+  getUserByUsername() { throw new Error("Repository.getUserByUsername must be implemented."); }
   createUser() { throw new Error("Repository.createUser must be implemented."); }
   updateUser() { throw new Error("Repository.updateUser must be implemented."); }
   deleteUser() { throw new Error("Repository.deleteUser must be implemented."); }

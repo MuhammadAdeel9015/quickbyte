@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1d6b4b">
-  <meta name="description" content="QuickBite administration portal demo">
+  <meta name="description" content="QuickBite administration portal">
+  <meta name="quickbite-api-base-url" content="https://quickbyte-wheat.vercel.app/api">
   <title>QuickBite Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,9 +24,9 @@
         <p>Sign in to manage your daily operations and keep QuickBite running smoothly.</p>
       </div>
       <form id="loginForm" novalidate>
-        <label for="loginEmail">Email address</label>
-        <input id="loginEmail" type="email" placeholder="admin@quickbite.test" autocomplete="username" required>
-        <div class="field-error" id="emailError"></div>
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" type="text" placeholder="your.username" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}">
+        <div class="field-error" id="usernameError"></div>
         <label for="loginPassword">Password</label>
         <div class="password-field">
           <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required>
@@ -33,7 +34,7 @@
         </div>
         <div class="field-error" id="passwordError"></div>
         <button class="button button-primary login-submit" type="submit">Sign in <span>→</span></button>
-        <p class="login-hint">Demo access: <b>admin@quickbite.test</b> · <b>QuickBite123</b></p>
+        <p class="login-hint">Sign in with your administrator account.</p>
       </form>
       <div class="login-foot">A little more organized. A lot more delicious. <span>✦</span></div>
     </div>
@@ -45,7 +46,7 @@
         <div class="login-stats"><div><b>4.9</b><span>Guest rating</span></div><i></i><div><b>15 min</b><span>Average prep</span></div><i></i><div><b>Fresh</b><span>Every day</span></div></div>
         <div class="login-food-art" aria-hidden="true">🥗</div>
       </div>
-      <span class="login-copyright">© <span id="yearLabel"></span> QuickBite Café · Admin demo</span>
+      <span class="login-copyright">© <span id="yearLabel"></span> QuickBite Café · Admin portal</span>
     </div>
   </section>
 

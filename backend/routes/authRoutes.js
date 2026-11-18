@@ -11,7 +11,7 @@ function authRoutes(services) {
   router.post("/customer/register", validate(schemas.customerRegistration), asyncHandler(controller.register));
   router.post("/customer/login", validate(schemas.login), asyncHandler(controller.customerLogin));
   router.post("/rider/login", validate(schemas.login), asyncHandler(controller.riderLogin));
-  router.post("/admin/login", validate(schemas.login), asyncHandler(controller.adminLogin));
+  router.post("/admin/login", validate(schemas.usernameLogin), asyncHandler(controller.adminLogin));
   router.get("/me", authenticate(services.repository), controller.me);
   router.post("/logout", authenticate(services.repository), controller.logout);
   return router;

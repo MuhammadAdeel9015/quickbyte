@@ -1,4 +1,4 @@
-const { bodyObject, requiredString, emailInvalid, phonePattern } = require("./common");
+const { bodyObject, requiredString, emailInvalid, phonePattern, usernameInvalid } = require("./common");
 
 function rejectUnknown(body, allowed) {
   return Object.keys(body).filter((key) => !allowed.includes(key)).map((field) => ({ field, message: "This field is not allowed." }));
@@ -21,6 +21,15 @@ const schema = {
     const errors = [];
     if (emailInvalid(req.body.email)) errors.push({ field: "email", message: "A valid email is required." });
     if (typeof req.body.password !== "string" || req.body.password.length < 1 || req.body.password.length > 72) errors.push({ field: "password", message: "Password is required." });
+    return errors;
+  },
+  usernameLogin(req) {
+    if (!bodyObject(req)) return [{ field: "body", message: "Must be a JSON object." }];
+    const errors = [];
+    if (usernameInvalid(req.body.username)) errors.push({ field: "username", message: "Username must be 3–32 letters, numbers, dots, underscores or hyphens." });
+    if (typeof req.body.password !== "string" || req.body.password.length < 1 || Buffer.byteLength(req.body.password, "utf8") > 72) {
+      errors.push({ field: "password", message: "Password is required and must be at most 72 bytes." });
+    }
     return errors;
   },
   profile(req) {
@@ -81,9 +90,10 @@ const schema = {
   employee(req) {
     if (!bodyObject(req)) return [{ field: "body", message: "Must be a JSON object." }];
     const errors = rejectUnknown(req.body, req.method === "POST"
-      ? ["name", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "password"]
-      : ["name", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"]);
+      ? ["name", "username", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "password"]
+      : ["name", "username", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"]);
     if (requiredString(req.body, "name", 2, 100)) errors.push({ field: "name", message: "Name must be 2–100 characters." });
+    if ("username" in req.body && usernameInvalid(req.body.username)) errors.push({ field: "username", message: "Username must be 3–32 letters, numbers, dots, underscores or hyphens." });
     if (emailInvalid(req.body.email)) errors.push({ field: "email", message: "A valid email is required." });
     if (typeof req.body.phone !== "string" || !phonePattern.test(req.body.phone.trim())) errors.push({ field: "phone", message: "A valid phone number is required." });
     if (typeof req.body.jobTitle !== "string" || !req.body.jobTitle.trim()) errors.push({ field: "jobTitle", message: "Job title is required." });
@@ -97,9 +107,10 @@ const schema = {
   employeeUpdate(req) {
     if (!bodyObject(req)) return [{ field: "body", message: "Must be a JSON object." }];
     const body = req.body;
-    const errors = rejectUnknown(body, ["name", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"]);
+    const errors = rejectUnknown(body, ["name", "username", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"]);
     if (Object.keys(body).length === 0) errors.push({ field: "body", message: "Provide at least one field to update." });
     if ("name" in body && requiredString(body, "name", 2, 100)) errors.push({ field: "name", message: "Name must be 2–100 characters." });
+    if ("username" in body && usernameInvalid(body.username)) errors.push({ field: "username", message: "Username must be 3–32 letters, numbers, dots, underscores or hyphens." });
     if ("email" in body && emailInvalid(body.email)) errors.push({ field: "email", message: "A valid email is required." });
     if ("phone" in body && (typeof body.phone !== "string" || !phonePattern.test(body.phone.trim()))) errors.push({ field: "phone", message: "A valid phone number is required." });
     if ("jobTitle" in body && (typeof body.jobTitle !== "string" || !body.jobTitle.trim() || body.jobTitle.length > 100)) errors.push({ field: "jobTitle", message: "Job title must be a non-empty string up to 100 characters." });

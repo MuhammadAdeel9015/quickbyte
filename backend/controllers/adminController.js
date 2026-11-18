@@ -2,12 +2,29 @@ const bcrypt = require("bcryptjs");
 const { AppError } = require("../utils/errors");
 const { publicUser } = require("../utils/sanitize");
 const { rolePermissions } = require("../middleware/authorize");
+const { normalizeUsername, usernameInvalid } = require("../validators/common");
 
 async function ensureEmailAvailable(repository, email, exceptId) {
   const normalized = email.trim().toLowerCase();
   const existing = await repository.getUserByEmail(normalized);
   if (existing && existing.id !== exceptId) throw new AppError(409, "Email is already registered.", "EMAIL_IN_USE");
   return normalized;
+}
+
+async function ensureUsernameAvailable(repository, username, exceptId) {
+  const normalized = normalizeUsername(username);
+  if (usernameInvalid(normalized)) throw new AppError(400, "Username must be 3–32 letters, numbers, dots, underscores or hyphens.", "INVALID_USERNAME");
+  const existing = await repository.getUserByUsername(normalized);
+  if (existing && existing.id !== exceptId) throw new AppError(409, "Username is already in use.", "USERNAME_IN_USE");
+  return normalized;
+}
+
+function employeeUsernameFromEmail(email) {
+  return email.split("@")[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^[^a-z0-9]+/, "")
+    .slice(0, 32);
 }
 
 function adminController({ repository, orderService, reportService, notificationService, inventoryService, employeeWorkforceService }) {
@@ -77,9 +94,10 @@ function adminController({ repository, orderService, reportService, notification
     employees: async (req, res) => res.json({ data: await listByRole("employee") }),
     createEmployee: async (req, res) => {
       const email = await ensureEmailAvailable(repository, req.body.email);
+      const username = await ensureUsernameAvailable(repository, req.body.username || employeeUsernameFromEmail(email));
       const employee = await repository.createUser({
         id: repository.nextId("EMP"), role: "employee", accessRole: req.body.accessRole || "Staff",
-        name: req.body.name.trim(), email, phone: req.body.phone.trim(),
+        name: req.body.name.trim(), username, email, phone: req.body.phone.trim(),
         jobTitle: req.body.jobTitle.trim(), shift: req.body.shift || "Day",
         status: req.body.status || "Active", joined: req.body.joined || new Date().toISOString().slice(0, 10),
         active: req.body.status !== "Inactive",
@@ -92,10 +110,11 @@ function adminController({ repository, orderService, reportService, notification
       if (!employee || employee.role !== "employee") throw new AppError(404, "Employee not found.", "EMPLOYEE_NOT_FOUND");
       if (req.body.accessRole && req.user.accessRole !== "Super Admin") throw new AppError(403, "Only a Super Admin can change portal roles.", "FORBIDDEN");
       const changes = {};
-      ["name", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"].forEach((key) => {
+      ["name", "username", "email", "phone", "jobTitle", "accessRole", "shift", "status", "joined", "active"].forEach((key) => {
         if (key in req.body) changes[key] = req.body[key];
       });
       if (changes.email) changes.email = await ensureEmailAvailable(repository, changes.email, employee.id);
+      if (changes.username) changes.username = await ensureUsernameAvailable(repository, changes.username, employee.id);
       if (changes.status) changes.active = changes.status !== "Inactive";
       res.json({ data: publicUser(await repository.updateUser(employee.id, changes)) });
     },

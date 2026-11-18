@@ -2,6 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "quickbite-admin-demo-v1";
+  const API_BASE_URL = document.querySelector('meta[name="quickbite-api-base-url"]')?.content.trim().replace(/\/+$/, "") || "";
   const dateString = (offset = 0) => {
     const date = new Date();
     date.setDate(date.getDate() + offset);
@@ -91,6 +92,7 @@
   let inventoryFilter = "All categories";
   let reportPeriod = "This week";
   let dashboardPeriod = "This week";
+  let accessToken = null;
 
   function loadState() {
     try {
@@ -113,6 +115,37 @@
       console.error("Could not save QuickBite demo data.", error);
       toast("Changes could not be saved in this browser.", true);
     }
+  }
+
+  async function apiRequest(path, { method = "GET", body, authenticated = false, token = accessToken } = {}) {
+    if (!API_BASE_URL) throw new Error("The QuickBite API URL is not configured.");
+    const headers = { Accept: "application/json" };
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+    if (authenticated) {
+      if (!token) throw new Error("Please sign in to continue.");
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+    let payload = null;
+    try { payload = await response.json(); } catch (_) { /* Empty/non-JSON response. */ }
+    if (!response.ok) {
+      const error = new Error(payload?.error?.message || `The QuickBite API request failed (${response.status}).`);
+      error.status = response.status;
+      throw error;
+    }
+    return payload?.data;
+  }
+
+  function updateAdminIdentity(user) {
+    const name = user.name || user.username || user.email;
+    const role = user.accessRole || (user.role === "admin" ? "Administrator" : "Employee");
+    $$(".sidebar-user .user-meta b, .top-profile > div:nth-child(2) b").forEach((element) => { element.textContent = name; });
+    $$(".sidebar-user .user-meta span, .top-profile > div:nth-child(2) span").forEach((element) => { element.textContent = role; });
+    $$(".sidebar-user .avatar, .top-profile .avatar").forEach((element) => { element.textContent = initials(name); });
   }
 
   function init() {
@@ -139,11 +172,6 @@
       if (link) navigate(link.dataset.page);
     });
     updateCounts();
-    if (sessionStorage.getItem("quickbite-admin-session") === "active") {
-      $("#loginScreen").classList.add("is-hidden");
-      $("#appShell").classList.remove("is-hidden");
-      navigate(activePage);
-    }
   }
 
   function togglePassword() {
@@ -154,15 +182,15 @@
     $("#passwordToggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
   }
 
-  function login(event) {
+  async function login(event) {
     event.preventDefault();
-    const email = $("#loginEmail").value.trim();
+    const username = $("#loginUsername").value.trim();
     const password = $("#loginPassword").value;
-    $("#emailError").textContent = "";
+    $("#usernameError").textContent = "";
     $("#passwordError").textContent = "";
     let valid = true;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      $("#emailError").textContent = "Enter a valid email address.";
+    if (!/^[a-z0-9][a-z0-9._-]{2,31}$/i.test(username)) {
+      $("#usernameError").textContent = "Enter a valid username (3–32 letters, numbers, dots, underscores or hyphens).";
       valid = false;
     }
     if (password.length < 6) {
@@ -170,19 +198,43 @@
       valid = false;
     }
     if (!valid) return;
-    if (email.toLowerCase() !== "admin@quickbite.test" || password !== "QuickBite123") {
-      $("#passwordError").textContent = "Use the demo access details shown above.";
-      return;
+    const submitButton = $("#loginForm button[type='submit']");
+    submitButton.disabled = true;
+    submitButton.setAttribute("aria-busy", "true");
+    try {
+      const session = await apiRequest("/auth/admin/login", {
+        method: "POST",
+        body: { username, password }
+      });
+      if (!session?.token) throw new Error("The QuickBite API did not return an access token.");
+      accessToken = session.token;
+      const user = await apiRequest("/auth/me", { authenticated: true });
+      if (!user || !["admin", "employee"].includes(user.role)) {
+        throw new Error("This account is not authorized for the Admin portal.");
+      }
+      updateAdminIdentity(user);
+      $("#loginScreen").classList.add("is-hidden");
+      $("#appShell").classList.remove("is-hidden");
+      navigate("dashboard");
+      toast(`Welcome back, ${user.name || user.username || user.email}!`);
+    } catch (error) {
+      accessToken = null;
+      $("#passwordError").textContent = error.status === 401
+        ? "Username or password is incorrect."
+        : error.message || "Unable to sign in. Please try again.";
+    } finally {
+      $("#loginPassword").value = "";
+      submitButton.disabled = false;
+      submitButton.removeAttribute("aria-busy");
     }
-    sessionStorage.setItem("quickbite-admin-session", "active");
-    $("#loginScreen").classList.add("is-hidden");
-    $("#appShell").classList.remove("is-hidden");
-    navigate("dashboard");
-    toast("Welcome back, Alex!");
   }
 
-  function logout() {
-    sessionStorage.removeItem("quickbite-admin-session");
+  async function logout() {
+    const token = accessToken;
+    accessToken = null;
+    if (token) {
+      try { await apiRequest("/auth/logout", { method: "POST", authenticated: true, token }); } catch (_) { /* Discard the client token regardless. */ }
+    }
     $("#appShell").classList.add("is-hidden");
     $("#loginScreen").classList.remove("is-hidden");
     $("#loginPassword").value = "";

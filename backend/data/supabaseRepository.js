@@ -4,6 +4,7 @@ const { createSupabaseClient } = require("../config/supabase");
 const { AppError } = require("../utils/errors");
 
 const USER_COLUMNS = {
+  username: "username",
   accessRole: "access_role",
   passwordHash: "password_hash",
   jobTitle: "job_title",
@@ -168,6 +169,12 @@ class SupabaseRepository extends Repository {
   async getUserByEmail(email) {
     const escapedEmail = email.replace(/[\\%_]/g, "\\$&");
     const row = await this.run("find profile by email", this.client.from("profiles").select("*").ilike("email", escapedEmail).maybeSingle());
+    return toUser(row);
+  }
+
+  async getUserByUsername(username) {
+    const escapedUsername = username.replace(/[\\%_]/g, "\\$&");
+    const row = await this.run("find profile by username", this.client.from("profiles").select("*").ilike("username", escapedUsername).maybeSingle());
     return toUser(row);
   }
 
